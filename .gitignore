@@ -1,0 +1,27 @@
+barayuda.github.io
+node_modules
+android
+ios
+.DS_Store
+dist
+dist-ssr
+*.local
+.npmrc
+.cache
+.vite-ssg-temp
+script.mjs
+components.d.ts
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

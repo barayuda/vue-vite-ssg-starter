@@ -1,0 +1,25 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.useFlatConfig": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "css.customData": [".vscode/tailwindcss.json"],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "cSpell.words": [
+    "Bara",
+    "barayuda",
+    "Megaworld",
+    "mtap",
+    "pageloader",
+    "prerendered",
+    "socmed",
+    "splide",
+    "unhead",
+    "unplugin",
+    "vueuse"
+  ],
+  "tailwindCSS.experimental.configFile": "./src/styles/main.css"
+}

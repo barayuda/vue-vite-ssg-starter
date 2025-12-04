@@ -1,0 +1,98 @@
+{
+  "name": "vite-ssg-vue-starter",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
+  "description": "Boilerplate for Vue 3 + Vite + ViteSSG with file-based routing, Pinia, Tailwind, and mock APIs.",
+  "author": "Bara <bara.g@archipelagohotels.com> <https://github.com/barayuda>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite-ssg build",
+    "preview": "npm run build && vite preview",
+    "preview:dist": "vite preview",
+    "lint": "eslint --cache --cache-location node_modules/.cache/eslint/",
+    "lint:stylelint": "stylelint \"./**/*.{vue,postcss,css}\" --cache --cache-location node_modules/.cache/stylelint/",
+    "lint-staged": "lint-staged",
+    "postinstall": "simple-git-hooks",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@unhead/vue": "^2.0.14",
+    "@vueuse/core": "^13.8.0",
+    "nprogress": "^0.2.0",
+    "pinia": "^3.0.3",
+    "prism-theme-vars": "^0.2.5",
+    "tailwindcss": "^4.1.14",
+    "vue": "^3.5.20",
+    "vue-router": "^4.6.3",
+    "vue3-recaptcha-v2": "^2.1.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/vue": "^8.1.0",
+    "@types/node": "^24.3.0",
+    "@types/nprogress": "^0.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/ui": "^4.0.15",
+    "@vue/test-utils": "^2.4.6",
+    "beasties": "^0.3.5",
+    "dotenv": "^17.2.1",
+    "eslint": "^9.34.0",
+    "gray-matter": "^4.0.3",
+    "happy-dom": "^20.0.11",
+    "lint-staged": "^16.1.5",
+    "markdown-it-prism": "^3.0.0",
+    "postcss-html": "^1.8.0",
+    "rollup": "^4.52.4",
+    "simple-git-hooks": "^2.11.1",
+    "stylelint": "^16.23.1",
+    "stylelint-config-recommended-vue": "^1.6.0",
+    "stylelint-config-standard": "^39.0.0",
+    "stylelint-order": "^7.0.0",
+    "typescript": "^5.7.3",
+    "unplugin-vue-markdown": "^29.1.0",
+    "vite": "^7.1.9",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pages": "^0.33.1",
+    "vite-plugin-pages-sitemap": "^1.7.1",
+    "vite-plugin-vue-devtools": "^8.0.2",
+    "vite-plugin-vue-layouts": "^0.11.0",
+    "vite-ssg": "^28.1.0",
+    "vitest": "^4.0.15",
+    "vue-tsc": "^3.0.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "^7.0.0"
+    },
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild",
+      "simple-git-hooks",
+      "vue-demi"
+    ]
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": [
+      "eslint --cache --cache-location node_modules/.cache/eslint/"
+    ],
+    "./**/*.{vue,postcss,css}": [
+      "stylelint --cache --cache-location node_modules/.cache/stylelint/"
+    ]
+  }
+}

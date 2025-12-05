@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
-import { computed, onMounted } from 'vue'
+import { computed, onBeforeMount } from 'vue'
 
 import { useNotification } from '/@/composables/useNotification'
 import { useShowcaseStore } from '/@/stores/showcase.store'
@@ -27,18 +27,22 @@ const { error: notifyError } = useNotification()
 const projects = computed(() => store.projects)
 const guides = computed(() => store.featuredGuides)
 
-onMounted(async () => {
+// Load data during SSR/SSG (onBeforeMount runs during SSR, unlike onMounted)
+onBeforeMount(async () => {
   try {
     if (!store.projects.length)
       await store.loadProjects()
     if (!store.guides.length)
       await store.loadGuides()
 
-    if (store.error)
+    // Only show notifications on client side
+    if (typeof window !== 'undefined' && store.error)
       notifyError(store.error)
   }
   catch (error) {
-    notifyError((error as Error).message || 'Failed to load data')
+    // Only show notifications on client side
+    if (typeof window !== 'undefined')
+      notifyError((error as Error).message || 'Failed to load data')
   }
 })
 </script>

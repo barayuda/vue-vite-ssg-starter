@@ -15,11 +15,42 @@ import App from '/@/App.vue'
 
 const routes = setupLayouts(generatedRoutes)
 
+// Debug: Log all routes in development
+if (import.meta.env.DEV) {
+  console.log('[main.ts] Generated routes:')
+  routes.forEach((r) => {
+    console.log(`  - ${r.path} (name: ${r.name || 'N/A'}, component: ${r.component})`)
+  })
+}
+
 interface Module extends Record<string, Record<string, UserModule>> {}
 
 export const createApp = ViteSSG(
   App,
-  { routes },
+  {
+    routes,
+    // Configure includedRoutes to pre-render all guide routes during SSG build
+    // This only affects build-time pre-rendering, not runtime routing
+    async includedRoutes(routes) {
+      // Only add dynamic routes during SSG build
+      if (import.meta.env.SSR) {
+        try {
+          // Get all guide slugs from mock API
+          const { getDynamicRoutes } = await import('./utils/ssg-routes')
+          const dynamicRoutes = await getDynamicRoutes()
+
+          // Combine static routes with dynamic guide routes for pre-rendering
+          return [...routes, ...dynamicRoutes]
+        }
+        catch (error) {
+          console.warn('⚠️ Failed to load dynamic routes for SSG:', error)
+          return routes
+        }
+      }
+      // In client/dev mode, return routes as-is (dynamic routes are handled by vite-plugin-pages)
+      return routes
+    },
+  },
   (ctx) => {
     // Pinia
     const pinia = createPinia()

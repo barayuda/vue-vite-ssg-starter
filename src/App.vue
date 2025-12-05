@@ -30,18 +30,11 @@ onMounted(() => {
       </main>
     </ErrorBoundary>
     <SiteFooter />
-    <Suspense>
-      <template #default>
-        <BackToTop
-          :threshold="240"
-          variant="circle"
-          theme="gradient"
-          :show-progress="true"
-        />
-      </template>
-      <template #fallback>
-        <!-- Fallback is minimal since BackToTop is non-critical -->
-      </template>
-    </Suspense>
+    <BackToTop
+      :threshold="240"
+      variant="circle"
+      theme="gradient"
+      :show-progress="true"
+    />
   </div>
 </template>

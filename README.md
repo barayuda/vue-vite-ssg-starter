@@ -31,6 +31,19 @@ Duplicate `.env.development` for new environments. Variables used:
 - `VITE_APP_ENV` / `VITE_APP_PROXY_URL` — Reserved for future proxying.
 - `VITE_RECAPTCHA_SITE_KEY` — Required to render the Recaptcha demo (`src/pages/plugins.vue`).
 
+### Dynamic Routes API Configuration
+
+To use a real API instead of the mock API for generating dynamic routes, configure these variables:
+
+- `VITE_GUIDES_API_ENDPOINT` — API endpoint to fetch guides (e.g., `https://api.example.com/guides`)
+- `VITE_GUIDES_API_METHOD` — HTTP method (default: `GET`)
+- `VITE_GUIDES_API_HEADERS` — JSON string of headers (e.g., `{"Authorization": "Bearer TOKEN"}`)
+- `VITE_GUIDES_API_RESPONSE_PATH` — Path to guides array in response (e.g., `data.guides`)
+- `VITE_GUIDES_API_SLUG_FIELD` — Field name containing slug (default: `slug`)
+- `VITE_GUIDES_API_TIMEOUT` — Request timeout in ms (default: `10000`)
+
+See [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md) for detailed configuration examples.
+
 All client-side variables must be prefixed with `VITE_`.
 
 ## Features to reuse

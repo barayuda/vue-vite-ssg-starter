@@ -22,8 +22,9 @@ const guides = computed(() => store.guides)
 const state = computed(() => store.state)
 
 onMounted(async () => {
-  if (!store.guides.length)
+  if (!store.guides.length) {
     await store.loadGuides()
+  }
 })
 </script>
 

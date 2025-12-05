@@ -81,6 +81,84 @@ const plugins = [
       <div class="flex items-center justify-between">
         <div>
           <p class="eyebrow">
+            Custom Plugins
+          </p>
+          <h2 class="section-title">
+            Project-specific Vite plugins
+          </h2>
+          <p class="text-slate-600 text-sm mt-1">
+            Custom plugins built for this project, located in the <code class="px-1 py-0.5 rounded bg-slate-100 text-xs">plugins/</code> directory.
+          </p>
+        </div>
+        <code class="px-2 py-1 rounded bg-slate-100 text-xs">plugins/</code>
+      </div>
+
+      <div class="space-y-4">
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900">
+                moveStaticHtmlPlugin
+              </h3>
+              <p class="text-xs text-slate-500 mt-1">
+                Version 0.0.1 · Build-time only
+              </p>
+            </div>
+            <code class="px-2 py-1 rounded bg-white text-xs border border-slate-200">
+              plugins/vite-plugin-move-static-html.ts
+            </code>
+          </div>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Moves static HTML files (except <code class="px-1 py-0.5 rounded bg-white text-xs">index.html</code> and <code class="px-1 py-0.5 rounded bg-white text-xs">notfound.html</code>) into their own folders with <code class="px-1 py-0.5 rounded bg-white text-xs">index.html</code> inside. This enables clean URLs for SSG-generated pages.
+          </p>
+          <div class="space-y-2">
+            <p class="text-xs font-semibold text-slate-600">
+              Example transformation:
+            </p>
+            <div class="rounded bg-white p-3 text-xs font-mono space-y-1 border border-slate-200">
+              <div class="text-slate-600">
+                <span class="text-slate-400">Before:</span> <code class="text-slate-700">hotels.html</code>
+              </div>
+              <div class="text-slate-400">
+                ↓
+              </div>
+              <div class="text-slate-900">
+                <span class="text-slate-400">After:</span> <code>hotels/index.html</code>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-white p-4 text-sm text-slate-700 space-y-2 border border-slate-200">
+            <p class="font-semibold">
+              Usage in vite.config.ts:
+            </p>
+            <pre class="overflow-x-auto text-xs"><code>import { moveStaticHtmlPlugin } from './plugins'
+
+export default defineConfig({
+  plugins: [
+    // ... other plugins
+    moveStaticHtmlPlugin(), // Only runs during build
+  ],
+})</code></pre>
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium">
+              apply: 'build'
+            </span>
+            <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 font-medium">
+              enforce: 'post'
+            </span>
+            <span class="px-2 py-1 rounded bg-green-100 text-green-700 font-medium">
+              SSG-friendly
+            </span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="eyebrow">
             Recaptcha v2
           </p>
           <h2 class="section-title">

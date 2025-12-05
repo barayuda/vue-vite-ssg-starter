@@ -17,6 +17,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 
 import { moveStaticHtmlPlugin } from './plugins'
+import { getGuideSlugsSync } from './plugins/vite-plugin-ssg-dynamic-routes'
 
 interface ViteSSGConfig extends UserConfig {
   ssgOptions?: {
@@ -53,12 +54,44 @@ const baseConfig: ViteSSGConfig = {
         return routes
       },
       extendRoute(route) {
+        // Debug: Log all routes during development
+        // eslint-disable-next-line node/prefer-global/process
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[vite-plugin-pages] Route: ${route.path} -> ${route.component}`)
+        }
+
+        // Transform [param] syntax to :param for Vue Router compatibility
+        // vite-plugin-pages with routeStyle: 'nuxt' should generate :param, but sometimes generates [param]
+        if (route.path.includes('[') && route.path.includes(']')) {
+          route.path = route.path.replace(/\[([^\]]+)\]/g, ':$1')
+          // eslint-disable-next-line node/prefer-global/process
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[vite-plugin-pages] Transformed route path: ${route.path}`)
+          }
+        }
+
         // Only process markdown files for frontmatter
         if (route.component.endsWith('.md')) {
           const path = resolve(__dirname, route.component.slice(1))
           const md = fs.readFileSync(path, 'utf-8')
           const { data } = matter(md)
           route.meta = Object.assign(route.meta || {}, { frontmatter: data })
+        }
+
+        // Enable pre-rendering for dynamic guide routes
+        // This ensures all guide pages are pre-rendered during SSG build
+        // Check for both :slug (nuxt style) and [slug] (remix style) formats
+        if (route.path.includes('/guides/:slug') || route.path.includes('/guides/[slug]') || route.path === '/guides/:slug' || route.path === '/guides/[slug]') {
+          // Get all guide slugs and create specific routes for each
+          // Use sync version for extendRoute hook (uses mock API or cache)
+          const guideSlugs = getGuideSlugsSync()
+          if (guideSlugs.length > 0) {
+            // Mark the route as prerendered
+            route.meta = route.meta || {}
+            route.meta.prerendered = true
+            // Store guide slugs for later use in SSG build
+            route.meta.guideSlugs = guideSlugs
+          }
         }
 
         return route

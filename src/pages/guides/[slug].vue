@@ -2,7 +2,7 @@
 {
   meta: {
     subfolder: true,
-    prerendered: false,
+    prerendered: true,
   }
 }
 </route>
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import type { Guide } from '/@/data/mock-api'
 import { useHead } from '@unhead/vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotification } from '/@/composables/useNotification'
 import { useShowcaseStore } from '/@/stores/showcase.store'
@@ -19,6 +19,7 @@ const route = useRoute()
 const router = useRouter()
 const store = useShowcaseStore()
 const current = ref<Guide | null>(null)
+const isLoading = ref(false)
 const { error: notifyError } = useNotification()
 
 const title = computed(() => current.value ? `${current.value.title} · Guides` : 'Guide · Vite SSG Starter')
@@ -28,23 +29,46 @@ useHead(() => ({
 }))
 
 async function loadGuide(slug: string) {
-  const guide = await store.getGuideBySlug(slug)
-  if (!guide) {
-    notifyError('Guide not found. Returning to guides.')
-    router.replace('/guides')
+  if (isLoading.value)
     return
+
+  isLoading.value = true
+  try {
+    const guide = await store.getGuideBySlug(slug)
+    if (!guide) {
+      // Only show error and redirect on client side
+      if (typeof window !== 'undefined') {
+        notifyError('Guide not found. Returning to guides.')
+        router.replace('/guides')
+      }
+      return
+    }
+    current.value = guide
   }
-  current.value = guide
+  finally {
+    isLoading.value = false
+  }
 }
+
+// Load guide on mount and when route changes
+async function initGuide() {
+  const slug = route.params.slug
+  if (typeof slug === 'string') {
+    await loadGuide(slug)
+  }
+}
+
+onMounted(() => {
+  initGuide()
+})
 
 watch(
   () => route.params.slug,
-  (slug) => {
-    if (typeof slug === 'string') {
-      loadGuide(slug)
+  async (newSlug) => {
+    if (typeof newSlug === 'string') {
+      await loadGuide(newSlug)
     }
   },
-  { immediate: true },
 )
 </script>
 

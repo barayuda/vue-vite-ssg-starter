@@ -58,6 +58,18 @@ const guides: Guide[] = [
     tags: ['tailwind', 'styling'],
     updatedAt: '2025-01-10',
   },
+  {
+    slug: 'markdown-pages',
+    title: 'Writing pages in Markdown',
+    summary: 'Create content-rich pages using Markdown syntax with frontmatter support, code highlighting, and Vue component integration.',
+    body: [
+      'This starter supports Markdown files (`.md`) as first-class routes. Simply drop a `.md` file in `src/pages` and it will be automatically converted to a route.',
+      'Features include frontmatter support, syntax highlighting with Prism.js, Vue component integration, and SSG-friendly pre-rendering.',
+      'Markdown content is automatically styled using Tailwind Typography and custom styles defined in `src/styles/markdown.css`.',
+    ],
+    tags: ['markdown', 'content', 'unplugin-vue-markdown'],
+    updatedAt: '2025-01-10',
+  },
 ]
 
 const projects: Project[] = [

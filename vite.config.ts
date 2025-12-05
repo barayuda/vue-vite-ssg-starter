@@ -72,10 +72,28 @@ const baseConfig: ViteSSGConfig = {
 
         // Only process markdown files for frontmatter
         if (route.component.endsWith('.md')) {
-          const path = resolve(__dirname, route.component.slice(1))
-          const md = fs.readFileSync(path, 'utf-8')
-          const { data } = matter(md)
-          route.meta = Object.assign(route.meta || {}, { frontmatter: data })
+          try {
+            // Handle different path formats (absolute, relative, with/without leading slash)
+            let filePath = route.component
+            if (filePath.startsWith('/')) {
+              filePath = filePath.slice(1)
+            }
+            if (!filePath.startsWith('src/')) {
+              filePath = `src/${filePath}`
+            }
+            const fullPath = resolve(__dirname, filePath)
+            if (fs.existsSync(fullPath)) {
+              const md = fs.readFileSync(fullPath, 'utf-8')
+              const { data } = matter(md)
+              route.meta = Object.assign(route.meta || {}, { frontmatter: data })
+            }
+          }
+          catch (error) {
+            // eslint-disable-next-line node/prefer-global/process
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`⚠️ Failed to process markdown frontmatter for ${route.component}:`, error)
+            }
+          }
         }
 
         // Enable pre-rendering for dynamic guide routes
@@ -103,7 +121,7 @@ const baseConfig: ViteSSGConfig = {
 
     // https://github.com/unplugin/unplugin-vue-markdown
     Markdown({
-      wrapperClasses: 'prose prose-sm m-auto text-left',
+      wrapperClasses: 'prose prose-slate max-w-none',
       headEnabled: true,
       markdownItSetup(md) {
         // https://prismjs.com/

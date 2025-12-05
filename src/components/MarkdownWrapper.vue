@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 interface FrontmatterProps {

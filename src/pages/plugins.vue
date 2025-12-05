@@ -152,6 +152,112 @@ export default defineConfig({
             </span>
           </div>
         </article>
+
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900">
+                ssgDynamicRoutesPlugin
+              </h3>
+              <p class="text-xs text-slate-500 mt-1">
+                Version 0.0.1 · Build-time only
+              </p>
+            </div>
+            <code class="px-2 py-1 rounded bg-white text-xs border border-slate-200">
+              plugins/vite-plugin-ssg-dynamic-routes.ts
+            </code>
+          </div>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Extends dynamic routes for SSG pre-rendering. Supports both <strong>mock API</strong> (file-based) and <strong>real API</strong> (HTTP fetch) to generate guide slugs for dynamic routes like <code class="px-1 py-0.5 rounded bg-white text-xs">/guides/[slug]</code>.
+          </p>
+          <div class="space-y-2">
+            <p class="text-xs font-semibold text-slate-600">
+              Features:
+            </p>
+            <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
+              <li>Automatic fallback to mock API if real API fails</li>
+              <li>24-hour response caching for faster builds</li>
+              <li>Supports GET/POST requests with custom headers</li>
+              <li>Handles nested API responses via response path</li>
+              <li>Configurable via environment variables</li>
+            </ul>
+          </div>
+          <div class="rounded-lg bg-white p-4 text-sm text-slate-700 space-y-2 border border-slate-200">
+            <p class="font-semibold">
+              Environment Variables (optional):
+            </p>
+            <pre class="overflow-x-auto text-xs"><code># Basic API endpoint
+VITE_GUIDES_API_ENDPOINT=https://api.example.com/guides
+
+# With authentication
+VITE_GUIDES_API_HEADERS={"Authorization": "Bearer TOKEN"}
+
+# POST request
+VITE_GUIDES_API_METHOD=POST
+VITE_GUIDES_API_BODY={"status": "published"}
+
+# Nested response
+VITE_GUIDES_API_RESPONSE_PATH=data.guides
+
+# Custom slug field
+VITE_GUIDES_API_SLUG_FIELD=slug
+
+# Timeout (ms)
+VITE_GUIDES_API_TIMEOUT=10000</code></pre>
+            <p class="text-xs text-slate-500 mt-2">
+              If no <code class="px-1 py-0.5 rounded bg-slate-100 text-xs">VITE_GUIDES_API_ENDPOINT</code> is set, the plugin automatically uses the mock API from <code class="px-1 py-0.5 rounded bg-slate-100 text-xs">src/data/mock-api.ts</code>.
+            </p>
+          </div>
+          <div class="rounded-lg bg-white p-4 text-sm text-slate-700 space-y-2 border border-slate-200">
+            <p class="font-semibold">
+              Usage in vite.config.ts:
+            </p>
+            <pre class="overflow-x-auto text-xs"><code>import { getGuideSlugsSync } from './plugins/vite-plugin-ssg-dynamic-routes'
+
+// In extendRoute hook:
+if (route.path.includes('/guides/:slug')) {
+  const guideSlugs = getGuideSlugsSync()
+  // ... use slugs for pre-rendering
+}</code></pre>
+            <p class="font-semibold mt-3">
+              Usage in src/utils/ssg-routes.ts:
+            </p>
+            <pre class="overflow-x-auto text-xs"><code>import { getGuideSlugs } from '../plugins/vite-plugin-ssg-dynamic-routes'
+
+export async function getDynamicRoutes() {
+  const slugs = await getGuideSlugs({
+    apiEndpoint: process.env.VITE_GUIDES_API_ENDPOINT,
+    // ... other options
+  })
+  return slugs.map(slug => `/guides/${slug}`)
+}</code></pre>
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium">
+              apply: 'build'
+            </span>
+            <span class="px-2 py-1 rounded bg-purple-100 text-purple-700 font-medium">
+              enforce: 'pre'
+            </span>
+            <span class="px-2 py-1 rounded bg-green-100 text-green-700 font-medium">
+              SSG-friendly
+            </span>
+            <span class="px-2 py-1 rounded bg-orange-100 text-orange-700 font-medium">
+              API support
+            </span>
+            <span class="px-2 py-1 rounded bg-teal-100 text-teal-700 font-medium">
+              Caching
+            </span>
+          </div>
+          <div class="rounded-lg bg-blue-50 p-3 text-xs text-blue-800 border border-blue-200">
+            <p class="font-semibold mb-1">
+              📚 Documentation:
+            </p>
+            <p>
+              See <code class="px-1 py-0.5 rounded bg-blue-100 text-xs">docs/API_CONFIGURATION.md</code> for detailed configuration examples and troubleshooting.
+            </p>
+          </div>
+        </article>
       </div>
     </section>
 

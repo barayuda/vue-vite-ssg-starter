@@ -98,8 +98,8 @@ const projects: Project[] = [
     name: 'UI playground',
     description: 'Tailwind v4 + component primitives for headers, cards, and callouts.',
     stack: ['Tailwind', 'TypeScript'],
-    status: 'planned',
-    href: '/plugins',
+    status: 'shipped',
+    href: '/ui-playground',
   },
 ]
 

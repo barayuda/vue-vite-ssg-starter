@@ -28,6 +28,10 @@ const scrollProgress = computed(() => {
   if (!props.showProgress)
     return 0
 
+  // Guard against SSR - document and window don't exist during server-side rendering
+  if (typeof document === 'undefined' || typeof window === 'undefined')
+    return 0
+
   const documentHeight = document.documentElement.scrollHeight - window.innerHeight
   if (documentHeight <= 0)
     return 0
@@ -37,6 +41,10 @@ const scrollProgress = computed(() => {
 
 function scrollToTop() {
   if (isScrolling.value)
+    return
+
+  // Guard against SSR
+  if (typeof window === 'undefined')
     return
 
   isScrolling.value = true

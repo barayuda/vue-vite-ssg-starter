@@ -34,15 +34,24 @@ export function moveStaticHtmlPlugin(): Plugin {
           return
         }
 
-        const htmlFiles = fs.readdirSync(distPath)
+        // Get HTML files from root directory
+        const rootHtmlFiles = fs.readdirSync(distPath)
           .filter(file => file.endsWith('.html') && file !== 'index.html' && file !== 'notfound.html' && file !== '')
 
-        if (htmlFiles.length === 0) {
+        // Get HTML files from guides subdirectory (dynamic routes)
+        const guidesPath = resolve(distPath, 'guides')
+        const guidesHtmlFiles = fs.existsSync(guidesPath)
+          ? fs.readdirSync(guidesPath)
+              .filter(file => file.endsWith('.html') && file !== 'index.html')
+          : []
+
+        if (rootHtmlFiles.length === 0 && guidesHtmlFiles.length === 0) {
           console.log('ℹ️ No HTML files to move (excluding index.html)')
           return
         }
 
-        htmlFiles.forEach((file) => {
+        // Move root HTML files
+        rootHtmlFiles.forEach((file) => {
           const baseName = file.replace('.html', '')
           const folderPath = resolve(distPath, baseName)
           const originalPath = resolve(distPath, file)
@@ -63,7 +72,30 @@ export function moveStaticHtmlPlugin(): Plugin {
           }
         })
 
-        console.log(`🎉 Move Static HTML completed! Processed ${htmlFiles.length} files.`)
+        // Move guides HTML files (dynamic routes) into subdirectories
+        guidesHtmlFiles.forEach((file) => {
+          const baseName = file.replace('.html', '')
+          const folderPath = resolve(guidesPath, baseName)
+          const originalPath = resolve(guidesPath, file)
+          const newPath = resolve(folderPath, 'index.html')
+
+          try {
+            // Create folder if it doesn't exist
+            if (!fs.existsSync(folderPath)) {
+              fs.mkdirSync(folderPath, { recursive: true })
+            }
+
+            // Move and rename file
+            fs.renameSync(originalPath, newPath)
+            console.log(`✅ Moved guides/${file} to guides/${baseName}/index.html`)
+          }
+          catch (err) {
+            console.error(`❌ Failed to move guides/${file}:`, err)
+          }
+        })
+
+        const totalFiles = rootHtmlFiles.length + guidesHtmlFiles.length
+        console.log(`🎉 Move Static HTML completed! Processed ${totalFiles} files.`)
       })
     },
   }

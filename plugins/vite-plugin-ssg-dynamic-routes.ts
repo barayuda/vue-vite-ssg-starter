@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite'
 import fs from 'node:fs'
 import { resolve } from 'node:path'
+import process from 'node:process'
 
 /**
  * Configuration options for the SSG dynamic routes plugin
@@ -80,17 +81,44 @@ export function ssgDynamicRoutesPlugin(_options: SSGDynamicRoutesOptions = {}): 
  */
 function getGuideSlugsFromMock(): string[] {
   try {
-    const mockApiPath = resolve(__dirname, '../src/data/mock-api.ts')
+    // Try multiple path resolution strategies to handle different build contexts
+    let mockApiPath: string | null = null
+
+    // Strategy 1: Relative to __dirname (works in source)
+    const pathFromDirname = resolve(__dirname, '../src/data/mock-api.ts')
+    if (fs.existsSync(pathFromDirname)) {
+      mockApiPath = pathFromDirname
+    }
+    else {
+      // Strategy 2: Relative to process.cwd() (works during build)
+      const pathFromCwd = resolve(process.cwd(), 'src/data/mock-api.ts')
+      if (fs.existsSync(pathFromCwd)) {
+        mockApiPath = pathFromCwd
+      }
+    }
+
+    if (!mockApiPath || !fs.existsSync(mockApiPath)) {
+      console.warn(`⚠️ Mock API file not found. Tried: ${pathFromDirname} and ${resolve(process.cwd(), 'src/data/mock-api.ts')}`)
+      return []
+    }
+
     const mockApiContent = fs.readFileSync(mockApiPath, 'utf-8')
 
-    // Extract guide slugs from the guides array
-    // Find the guides array and extract all slug values
-    const guidesMatch = mockApiContent.match(/const guides: Guide\[\] = \[([\s\S]*?)\]/)
-    if (!guidesMatch)
+    // Find the section between "const guides:" and "const projects:" (or end of file)
+    // This ensures we only extract slugs from the guides array, not from projects
+    const guidesStart = mockApiContent.indexOf('const guides: Guide[] = [')
+    if (guidesStart === -1)
       return []
 
-    const guidesContent = guidesMatch[1]
-    const slugMatches = guidesContent.matchAll(/slug:\s*['"]([^'"]+)['"]/g)
+    const projectsStart = mockApiContent.indexOf('const projects: Project[] = [')
+    const guidesEnd = projectsStart !== -1 ? projectsStart : mockApiContent.length
+
+    // Extract the guides section
+    const guidesSection = mockApiContent.substring(guidesStart, guidesEnd)
+
+    // Extract all slug values from the guides section
+    // Match pattern: slug: 'value' or slug: "value"
+    const slugMatches = guidesSection.matchAll(/slug:\s*['"]([^'"]+)['"]/g)
     const slugs: string[] = []
 
     for (const match of slugMatches) {
@@ -230,7 +258,7 @@ export async function getGuideSlugs(options: SSGDynamicRoutesOptions = {}): Prom
     slugField = 'slug',
     timeout = 10000,
     cache = true,
-    cachePath = resolve(__dirname, '../node_modules/.cache/ssg-routes.json'),
+    cachePath = resolve(process.cwd(), 'node_modules/.cache/ssg-routes.json'),
   } = options
 
   // If no API endpoint is provided, use mock API
@@ -254,8 +282,8 @@ export async function getGuideSlugs(options: SSGDynamicRoutesOptions = {}): Prom
       apiEndpoint,
       apiMethod,
       apiHeaders,
-      apiBody,
-      responsePath,
+      apiBody: apiBody ?? {},
+      responsePath: responsePath ?? '',
       slugField,
       timeout,
     })
@@ -282,7 +310,7 @@ export async function getGuideSlugs(options: SSGDynamicRoutesOptions = {}): Prom
  * This will use mock API or cached data only
  */
 export function getGuideSlugsSync(options: SSGDynamicRoutesOptions = {}): string[] {
-  const { cachePath = resolve(__dirname, '../node_modules/.cache/ssg-routes.json') } = options
+  const { cachePath = resolve(process.cwd(), 'node_modules/.cache/ssg-routes.json') } = options
 
   // Try cache first
   if (options.cache !== false) {

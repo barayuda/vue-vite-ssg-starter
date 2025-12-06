@@ -16,7 +16,7 @@ import generateSitemap from 'vite-plugin-pages-sitemap'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 
-import { moveStaticHtmlPlugin } from './plugins'
+import { moveStaticHtmlPlugin, viteSSGEnsureDynamicRoutes } from './plugins'
 import { getGuideSlugsSync } from './plugins/vite-plugin-ssg-dynamic-routes'
 
 interface ViteSSGConfig extends UserConfig {
@@ -30,6 +30,9 @@ interface ViteSSGConfig extends UserConfig {
 
 const baseConfig: ViteSSGConfig = {
   plugins: [
+    // Ensure dynamic routes are available during build
+    viteSSGEnsureDynamicRoutes(),
+
     Vue({ include: [/\.vue$/, /\.md$/] }),
 
     // https://github.com/hannoeru/vite-plugin-pages
@@ -161,10 +164,21 @@ const baseConfig: ViteSSGConfig = {
   },
   optimizeDeps: {
     include: [],
-    exclude: [],
+    exclude: ['vite-plugin-ssg-dynamic-routes'],
+  },
+  ssr: {
+    noExternal: [],
+    external: ['vite-plugin-ssg-dynamic-routes'],
   },
   build: {
     rollupOptions: {
+      external: (id) => {
+        // Mark plugin files as external - they should only run in Node.js context
+        if (id.includes('vite-plugin-ssg-dynamic-routes')) {
+          return true
+        }
+        return false
+      },
       output: {
         manualChunks(id) {
           // Only apply manual chunks for client builds, not SSR

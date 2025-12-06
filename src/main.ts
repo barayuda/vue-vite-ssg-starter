@@ -27,30 +27,7 @@ interface Module extends Record<string, Record<string, UserModule>> {}
 
 export const createApp = ViteSSG(
   App,
-  {
-    routes,
-    // Configure includedRoutes to pre-render all guide routes during SSG build
-    // This only affects build-time pre-rendering, not runtime routing
-    async includedRoutes(routes) {
-      // Only add dynamic routes during SSG build
-      if (import.meta.env.SSR) {
-        try {
-          // Get all guide slugs from mock API
-          const { getDynamicRoutes } = await import('./utils/ssg-routes')
-          const dynamicRoutes = await getDynamicRoutes()
-
-          // Combine static routes with dynamic guide routes for pre-rendering
-          return [...routes, ...dynamicRoutes]
-        }
-        catch (error) {
-          console.warn('⚠️ Failed to load dynamic routes for SSG:', error)
-          return routes
-        }
-      }
-      // In client/dev mode, return routes as-is (dynamic routes are handled by vite-plugin-pages)
-      return routes
-    },
-  },
+  { routes },
   (ctx) => {
     // Pinia
     const pinia = createPinia()
@@ -95,3 +72,41 @@ export const createApp = ViteSSG(
     Object.values(modules).map(m => m.install?.(ctx))
   },
 )
+
+/**
+ * Export includedRoutes function to pre-render dynamic routes
+ * According to ViteSSG docs: https://github.com/antfu-collective/vite-ssg
+ * This function must be exported from main.ts to ensure it has access to Vite environment variables
+ *
+ * The function receives:
+ * - paths: array of route paths (strings)
+ * - routes: array of route records (objects with path, component, etc.)
+ *
+ * It should return an array of paths (strings) to pre-render
+ */
+export async function includedRoutes(paths: string[], routes: any[]) {
+  console.log(`\n[includedRoutes] Called with ${paths.length} static paths and ${routes.length} route records`)
+
+  // Use the existing getDynamicRoutes function which handles imports correctly
+  const { getDynamicRoutes } = await import('./utils/ssg-routes')
+  const dynamicRoutePaths = await getDynamicRoutes()
+
+  console.log(`[includedRoutes] Found ${dynamicRoutePaths.length} dynamic routes:`, dynamicRoutePaths)
+
+  // According to ViteSSG docs example, use routes.flatMap() to transform route records
+  // This is the recommended approach from the official documentation
+  const allRoutes = routes.flatMap((route) => {
+    // For the guides dynamic route, return all the specific slug paths
+    if (route.path === '/guides/:slug' || route.path === '/guides/[slug]') {
+      return dynamicRoutePaths
+    }
+    // For other routes, return their path as-is
+    return route.path
+  })
+
+  console.log(`[includedRoutes] Returning ${allRoutes.length} total routes to pre-render`)
+  console.log(`[includedRoutes] Routes:`, allRoutes.slice(0, 5), allRoutes.length > 5 ? '...' : '')
+  console.log()
+
+  return allRoutes
+}

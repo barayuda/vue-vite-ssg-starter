@@ -8,15 +8,6 @@ tags:
 updatedAt: '2025-01-10'
 ---
 
-<script setup lang="ts">
-import MarkdownWrapper from '/@/components/MarkdownWrapper.vue'
-
-// unplugin-vue-markdown automatically exposes frontmatter from YAML
-// No need to declare it manually - it's already available
-</script>
-
-<MarkdownWrapper :frontmatter="frontmatter">
-
 # Writing Pages in Markdown
 
 This starter supports **Markdown files** (`.md`) as first-class routes. Simply drop a `.md` file in `src/pages` and it will be automatically converted to a route.
@@ -108,14 +99,16 @@ const user: User = {
 ```
 
 **Vue Component:**
-```vue
+```html
 <template>
   <div class="card">
     <h2>{{ title }}</h2>
     <p>{{ description }}</p>
   </div>
 </template>
+```
 
+```typescript
 <script setup lang="ts">
 defineProps<{
   title: string
@@ -204,6 +197,4 @@ You can also create dynamic markdown routes:
 ---
 
 **Happy writing!** 📝
-
-</MarkdownWrapper>
 

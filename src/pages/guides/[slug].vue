@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import type { Guide } from '/@/data/mock-api'
 import { useHead } from '@unhead/vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotification } from '/@/composables/useNotification'
 import { useShowcaseStore } from '/@/stores/showcase.store'
@@ -50,18 +50,24 @@ async function loadGuide(slug: string) {
   }
 }
 
-// Load guide on mount and when route changes
+// Load guide data - this runs during SSR for SSG builds
 async function initGuide() {
   const slug = route.params.slug
   if (typeof slug === 'string') {
     await loadGuide(slug)
   }
+  else if (Array.isArray(slug) && slug.length > 0) {
+    // Handle array case (shouldn't happen but be safe)
+    await loadGuide(slug[0])
+  }
 }
 
-onMounted(() => {
+// Load data - onBeforeMount runs during SSR, which is what we need for SSG
+onBeforeMount(() => {
   initGuide()
 })
 
+// Also watch for route changes on client side
 watch(
   () => route.params.slug,
   async (newSlug) => {

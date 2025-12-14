@@ -1,17 +1,45 @@
+/**
+ * @module utils/sanitize
+ * @description XSS protection utilities for sanitizing user input and API responses.
+ * Provides functions to remove dangerous HTML tags, scripts, and event handlers from strings and objects.
+ */
+
 /* eslint-disable regexp/no-super-linear-backtracking */
 
 /**
- * Sanitizes a string by removing potentially dangerous HTML tags and scripts
- * @description This function removes HTML tags and scripts based on configuration options.
- * When allow_html is true, only specified tags and attributes are preserved.
- * Scripts and event handlers are always removed unless allow_script is true.
+ * @function sanitizeString
+ * @description Sanitizes a string by removing potentially dangerous HTML tags and scripts.
+ * When `allow_html` is true, only specified tags and attributes are preserved.
+ * Scripts and event handlers are always removed unless `allow_script` is true.
+ *
  * @param {string} str - The string to sanitize
- * @param {object} options - Configuration options
- * @param {boolean} options.allow_html - Whether to allow specific HTML tags
- * @param {boolean} options.allow_script - Whether to allow script tags and handlers
- * @param {string[]} options.allowed_tags - Array of allowed HTML tag names
- * @param {string[]} options.allowed_attributes - Array of allowed HTML attributes
- * @returns {string} - The sanitized string
+ * @param {object} [options] - Configuration options
+ * @param {boolean} [options.allow_html] - Whether to allow specific HTML tags
+ * @param {boolean} [options.allow_script] - Whether to allow script tags and handlers
+ * @param {string[]} [options.allowed_tags] - Array of allowed HTML tag names
+ * @param {string[]} [options.allowed_attributes] - Array of allowed HTML attributes
+ * @returns {string} The sanitized string
+ *
+ * @example
+ * ```typescript
+ * // Remove all HTML
+ * sanitizeString('<script>alert("xss")</script>Hello')
+ * // Returns: 'Hello'
+ *
+ * // Allow specific HTML tags
+ * sanitizeString('<p>Hello <strong>world</strong></p>', {
+ *   allow_html: true,
+ *   allowed_tags: ['p', 'strong']
+ * })
+ * // Returns: '<p>Hello <strong>world</strong></p>'
+ * ```
+ *
+ * @throws {TypeError} Returns input as-is if not a string
+ *
+ * @remarks
+ * - Always removes script tags and javascript: URLs unless allow_script is true
+ * - Removes inline event handlers (onclick, onerror, etc.) unless allow_script is true
+ * - Preserves allowed attributes only when allow_html is true
  */
 export function sanitizeString(str: string, options: {
   allow_html: boolean
@@ -73,10 +101,41 @@ interface SanitizeOptions {
 }
 
 /**
- * Sanitizes an object by recursively sanitizing all string values
- * @param obj - The object to sanitize
- * @param options - Sanitization options to pass to sanitizeString
- * @returns A new object with sanitized values
+ * @interface SanitizeOptions
+ * @description Options for sanitization functions.
+ */
+interface SanitizeOptions {
+  allow_html?: boolean
+  allow_script?: boolean
+  allowed_tags?: string[]
+  allowed_attributes?: string[]
+}
+
+/**
+ * @function sanitizeObject
+ * @description Recursively sanitizes all string values in an object or array.
+ * Creates a new object/array with sanitized values, leaving non-string values unchanged.
+ *
+ * @param {unknown[] | Record<string, unknown> | null} obj - The object or array to sanitize
+ * @param {SanitizeOptions} [options] - Sanitization options to pass to sanitizeString
+ * @returns {unknown} A new object/array with sanitized string values
+ *
+ * @example
+ * ```typescript
+ * const userInput = {
+ *   name: '<script>alert("xss")</script>John',
+ *   email: 'john@example.com',
+ *   bio: '<p>My bio</p>'
+ * }
+ *
+ * const sanitized = sanitizeObject(userInput)
+ * // Returns: { name: 'John', email: 'john@example.com', bio: 'My bio' }
+ * ```
+ *
+ * @remarks
+ * - Returns input as-is if not an object or array
+ * - Handles nested objects and arrays recursively
+ * - Non-string values (numbers, booleans, null) are preserved
  */
 export function sanitizeObject(obj: unknown[] | Record<string, unknown> | null, options: SanitizeOptions = {}): unknown {
   if (!obj || typeof obj !== 'object' || obj === null)

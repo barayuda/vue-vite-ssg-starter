@@ -1,15 +1,14 @@
 catalogMode: prefer
-
 cleanupUnusedCatalogs: true
-
 shellEmulator: true
 
 trustPolicy: no-downgrade
 
 overrides:
-  undici-types: 7.16.0
+  '@types/node': ^24.3.0
+  semver: ^7.6.0
+  undici-types: ^7.16.0
   vite: ^7.0.0
-
 catalog:
   '@antfu/eslint-config': ^6.0.0
   '@tailwindcss/vite': ^4.1.14
@@ -48,7 +47,7 @@ catalog:
   vite-plugin-compression: ^0.5.1
   vite-plugin-pages: ^0.33.1
   vite-plugin-pages-sitemap: ^1.7.1
-  vite-plugin-vue-devtools: ^8.0.5
+  vite-plugin-vue-devtools: ^8.0.2
   vite-plugin-vue-layouts: ^0.11.0
   vite-ssg: ^28.2.2
   vitest: ^4.0.15

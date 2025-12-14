@@ -1,22 +1,57 @@
+/**
+ * @module data/mock-api
+ * @description Mock API data and functions for development and SSG builds.
+ * Provides in-memory data structures and async functions that simulate API calls.
+ * Used to keep the starter self-contained without external dependencies.
+ */
+
+/**
+ * @interface Guide
+ * @description Guide/article data structure.
+ */
 export interface Guide {
+  /** URL-friendly identifier for the guide */
   slug: string
+  /** Guide title */
   title: string
+  /** Short summary/description */
   summary: string
+  /** Array of body paragraphs */
   body: string[]
+  /** Array of tag strings */
   tags: string[]
+  /** Last update date (ISO format) */
   updatedAt: string
 }
 
+/**
+ * @interface Project
+ * @description Project showcase data structure.
+ */
 export interface Project {
+  /** URL-friendly identifier for the project */
   slug: string
+  /** Project name */
   name: string
+  /** Project description */
   description: string
+  /** Technology stack used */
   stack: string[]
+  /** Project status */
   status: 'planned' | 'in-progress' | 'shipped'
+  /** Optional repository URL */
   repo?: string
+  /** Link to project page or demo */
   href: string
 }
 
+/**
+ * @function delay
+ * @private
+ * @description Simulates network delay for mock API calls.
+ * @param {number} [ms] - Delay in milliseconds
+ * @returns {Promise<void>} Promise that resolves after the delay
+ */
 function delay(ms = 120) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -115,16 +150,47 @@ const projects: Project[] = [
   },
 ]
 
+/**
+ * @function fetchGuides
+ * @description Fetches all guides from the mock API.
+ * @returns {Promise<Guide[]>} Array of all guides
+ *
+ * @example
+ * ```typescript
+ * const guides = await fetchGuides()
+ * ```
+ */
 export async function fetchGuides() {
   await delay()
   return guides
 }
 
+/**
+ * @function fetchGuideBySlug
+ * @description Fetches a single guide by its slug.
+ * @param {string} slug - Guide slug identifier
+ * @returns {Promise<Guide | undefined>} Guide object or undefined if not found
+ *
+ * @example
+ * ```typescript
+ * const guide = await fetchGuideBySlug('file-based-routing')
+ * ```
+ */
 export async function fetchGuideBySlug(slug: string) {
   await delay()
   return guides.find(guide => guide.slug === slug)
 }
 
+/**
+ * @function fetchProjects
+ * @description Fetches all projects from the mock API.
+ * @returns {Promise<Project[]>} Array of all projects
+ *
+ * @example
+ * ```typescript
+ * const projects = await fetchProjects()
+ * ```
+ */
 export async function fetchProjects() {
   await delay()
   return projects

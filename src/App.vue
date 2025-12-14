@@ -2,23 +2,29 @@
 import { defineAsyncComponent, onMounted } from 'vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
 import Notifications from './components/Notifications.vue'
+import PageLoader from './components/PageLoader.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 
 import globalNotification from '/@/composables/useNotification'
-import PageLoader from '/@/utils/pageloader.module'
+import PageLoaderUtil from '/@/utils/pageloader.module'
 
 // Dynamic imports for non-critical components
 const BackToTop = defineAsyncComponent(() => import('./components/BackToTop.vue'))
 
 onMounted(() => {
   globalNotification.clearAll()
-  PageLoader.hide(500)
+  PageLoaderUtil.hide(500)
 })
 </script>
 
 <template>
   <div class="min-h-screen bg-surface text-slate-900 flex flex-col">
+    <PageLoader
+      logo="/android-chrome-192x192.png"
+      logo-alt="App Logo"
+      logo-size="100px"
+    />
     <Notifications />
     <SiteHeader />
     <ErrorBoundary

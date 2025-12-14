@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "Figma": {
+      "url": "http://127.0.0.1:3845/mcp",
+      "headers": {}
+    },
+    "Playwright": {
+      "command": "npx -y @playwright/mcp@latest",
+      "env": {},
+      "args": []
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "Chrome DevTools": {
+      "command": "npx chrome-devtools-mcp@latest",
+      "env": {},
+      "args": []
+    }
+  }
+}

@@ -1,4 +1,25 @@
 <script setup lang="ts">
+/**
+ * @component SiteFooter
+ * @description Site footer component displaying technology stack, links, and project information.
+ * Provides a three-column layout with stack badges, navigation links, and description.
+ *
+ * @example
+ * ```vue
+ * <SiteFooter />
+ * ```
+ *
+ * @remarks
+ * - Responsive grid layout (3 columns on medium+ screens)
+ * - Displays technology stack as badges
+ * - Includes internal and external links
+ * - Shows project requirements and description
+ */
+/**
+ * @constant stacks
+ * @description Array of technology stack items to display as badges in the footer.
+ * @type {string[]}
+ */
 const stacks = ['Vue 3', 'Vite', 'ViteSSG', 'Pinia', 'Tailwind v4', 'Vue Devtools', 'vue3-recaptcha-v2']
 </script>
 

@@ -1,7 +1,16 @@
+/**
+ * @module composables/useNotification
+ * @description Centralized notification system for displaying user messages.
+ * Provides a reactive notification queue with auto-dismiss functionality, type-based styling,
+ * and keyboard accessibility support.
+ */
+
 import { reactive, readonly, ref } from 'vue'
 
 /**
- * Notification types map for better type safety and tree-shaking
+ * @constant NotificationType
+ * @description Notification types map for better type safety and tree-shaking.
+ * Used to categorize notifications and apply appropriate styling.
  */
 export const NotificationType = {
   SUCCESS: 'success',
@@ -10,11 +19,51 @@ export const NotificationType = {
   INFO: 'info',
 } as const
 
+/**
+ * @typedef {string} NotificationTypeValue
+ * @description Union type of all valid notification type values.
+ */
 export type NotificationTypeValue = typeof NotificationType[keyof typeof NotificationType]
 
 /**
- * Notification system composable
- * Provides a centralized way to display notifications to users
+ * @function useNotification
+ * @description Creates a notification system instance with methods to display and manage notifications.
+ * Each instance maintains its own notification queue. A global instance is exported for app-wide use.
+ *
+ * @returns {object} Notification system API with state and methods:
+ *   - {Readonly<Ref<Array>>} notifications - Readonly reactive array of active notifications
+ *   - {Function} notify - Add a new notification with full options
+ *   - {Function} showNotification - Alias for notify (backward compatibility)
+ *   - {Function} dismiss - Dismiss a notification by ID
+ *   - {Function} clearAll - Clear all notifications
+ *   - {Function} success - Convenience method for success notifications
+ *   - {Function} error - Convenience method for error notifications
+ *   - {Function} warning - Convenience method for warning notifications
+ *   - {Function} info - Convenience method for info notifications
+ *
+ * @example
+ * ```typescript
+ * // Using the global instance
+ * import { useNotification } from '@/composables/useNotification'
+ * const { success, error } = useNotification()
+ *
+ * success('Operation completed successfully!')
+ * error('Something went wrong', 0) // 0 = no auto-dismiss
+ *
+ * // Or create a local instance
+ * const notification = useNotification()
+ * notification.notify({
+ *   type: NotificationType.WARNING,
+ *   message: 'Please review your changes',
+ *   timeout: 7000
+ * })
+ * ```
+ *
+ * @remarks
+ * - Notifications are automatically removed from the queue when dismissed
+ * - Auto-dismiss timeout can be set per notification (0 = no auto-dismiss)
+ * - Invalid messages are rejected with console warnings
+ * - Notifications include timestamps for tracking
  */
 export function useNotification() {
   // Private state
@@ -22,13 +71,27 @@ export function useNotification() {
   const notificationId = ref(0)
 
   /**
-   * Add a new notification
-   * @param {object} notification - Notification object
-   * @param {string} notification.type - Notification type (success, error, warning, info)
-   * @param {string} notification.message - Notification message
-   * @param {number} [notification.timeout] - Auto-dismiss timeout in ms (0 for no auto-dismiss)
+   * @function notify
+   * @description Adds a new notification to the queue with specified options.
+   *
+   * @param {object} notification - Notification configuration object
+   * @param {NotificationTypeValue} [notification.type] - Notification type
+   * @param {string} notification.message - Notification message text (required, non-empty)
+   * @param {number} [notification.timeout] - Auto-dismiss timeout in milliseconds (0 = no auto-dismiss)
    * @param {boolean} [notification.dismissible] - Whether notification can be manually dismissed
-   * @returns {number|null} - ID of the created notification or null if invalid message
+   * @returns {number|null} ID of the created notification, or null if message is invalid
+   *
+   * @throws {Error} Logs warning to console if message is invalid or type is invalid
+   *
+   * @example
+   * ```typescript
+   * const id = notify({
+   *   type: NotificationType.SUCCESS,
+   *   message: 'Saved successfully!',
+   *   timeout: 3000,
+   *   dismissible: true
+   * })
+   * ```
    */
   function notify({ type = NotificationType.INFO, message, timeout = 5000, dismissible = true }: { type: NotificationTypeValue, message: string, timeout?: number, dismissible?: boolean }): number | null {
     // Validate message
@@ -67,9 +130,18 @@ export function useNotification() {
   }
 
   /**
-   * Dismiss a notification by ID
-   * @param {number} id - Notification ID to dismiss
-   * @returns {boolean} - Whether notification was found and dismissed
+   * @function dismiss
+   * @description Removes a notification from the queue by its ID.
+   *
+   * @param {number} id - The notification ID to dismiss
+   * @returns {boolean} True if notification was found and dismissed, false otherwise
+   *
+   * @example
+   * ```typescript
+   * const id = success('Message')
+   * // Later...
+   * dismiss(id)
+   * ```
    */
   function dismiss(id: number): boolean {
     const index = notifications.value.findIndex((n: { id: number }) => n.id === id)
@@ -81,60 +153,104 @@ export function useNotification() {
   }
 
   /**
-   * Clear all notifications
+   * @function clearAll
+   * @description Removes all notifications from the queue.
+   * Useful for clearing notifications when navigating between routes or resetting state.
+   *
+   * @example
+   * ```typescript
+   * // Clear all notifications on route change
+   * router.afterEach(() => {
+   *   clearAll()
+   * })
+   * ```
    */
   function clearAll() {
     notifications.value = []
   }
 
   /**
-   * Convenience method for success notifications
-   * @param {string} message - Success message
-   * @param {number} [timeout] - Auto-dismiss timeout
-   * @returns {number|null} - Notification ID or null if invalid message
+   * @function success
+   * @description Convenience method for displaying success notifications.
+   *
+   * @param {string} message - Success message to display
+   * @param {number} [timeout] - Auto-dismiss timeout in milliseconds
+   * @returns {number|null} Notification ID or null if message is invalid
+   *
+   * @example
+   * ```typescript
+   * success('Data saved successfully!')
+   * ```
    */
   function success(message: string, timeout: number = 5000): number | null {
     return notify({ type: NotificationType.SUCCESS, message, timeout })
   }
 
   /**
-   * Convenience method for error notifications
-   * @param {string} message - Error message
-   * @param {number} [timeout] - Auto-dismiss timeout (0 = no auto-dismiss)
-   * @returns {number|null} - Notification ID or null if invalid message
+   * @function error
+   * @description Convenience method for displaying error notifications.
+   * By default, error notifications do not auto-dismiss (timeout = 0).
+   *
+   * @param {string} message - Error message to display
+   * @param {number} [timeout] - Auto-dismiss timeout in milliseconds (0 = no auto-dismiss)
+   * @returns {number|null} Notification ID or null if message is invalid
+   *
+   * @example
+   * ```typescript
+   * error('Failed to save data', 0) // No auto-dismiss
+   * error('Temporary error', 5000) // Auto-dismiss after 5 seconds
+   * ```
    */
   function error(message: string, timeout: number = 0): number | null {
     return notify({ type: NotificationType.ERROR, message, timeout })
   }
 
   /**
-   * Convenience method for warning notifications
-   * @param {string} message - Warning message
-   * @param {number} [timeout] - Auto-dismiss timeout
-   * @returns {number|null} - Notification ID or null if invalid message
+   * @function warning
+   * @description Convenience method for displaying warning notifications.
+   *
+   * @param {string} message - Warning message to display
+   * @param {number} [timeout] - Auto-dismiss timeout in milliseconds
+   * @returns {number|null} Notification ID or null if message is invalid
+   *
+   * @example
+   * ```typescript
+   * warning('Please review your changes before submitting')
+   * ```
    */
   function warning(message: string, timeout: number = 7000): number | null {
     return notify({ type: NotificationType.WARNING, message, timeout })
   }
 
   /**
-   * Convenience method for info notifications
-   * @param {string} message - Info message
-   * @param {number} [timeout] - Auto-dismiss timeout
-   * @returns {number|null} - Notification ID or null if invalid message
+   * @function info
+   * @description Convenience method for displaying informational notifications.
+   *
+   * @param {string} message - Info message to display
+   * @param {number} [timeout] - Auto-dismiss timeout in milliseconds
+   * @returns {number|null} Notification ID or null if message is invalid
+   *
+   * @example
+   * ```typescript
+   * info('New features available')
+   * ```
    */
   function info(message: string, timeout: number = 5000): number | null {
     return notify({ type: NotificationType.INFO, message, timeout })
   }
 
   /**
-   * Alias for notify function to maintain backward compatibility
-   * @param notification - Notification object
-   * @param notification.type - Notification type
-   * @param notification.message - Notification message
-   * @param notification.timeout - Auto-dismiss timeout in ms
-   * @param notification.dismissible - Whether notification can be manually dismissed
-   * @returns Notification ID or null if invalid message
+   * @function showNotification
+   * @description Alias for `notify` function to maintain backward compatibility.
+   *
+   * @param {object} notification - Notification configuration object
+   * @param {NotificationTypeValue} notification.type - Notification type
+   * @param {string} notification.message - Notification message
+   * @param {number} [notification.timeout] - Auto-dismiss timeout in milliseconds
+   * @param {boolean} [notification.dismissible] - Whether notification can be manually dismissed
+   * @returns {number|null} Notification ID or null if message is invalid
+   *
+   * @see {@link notify} for detailed documentation
    */
   function showNotification(notification: { type: NotificationTypeValue, message: string, timeout?: number, dismissible?: boolean }): number | null {
     return notify(notification)
@@ -156,11 +272,29 @@ export function useNotification() {
   }
 }
 
-// Create a global notification instance
+/**
+ * @constant globalNotification
+ * @description Global notification instance for app-wide use.
+ * This instance is shared across all components that import the default export.
+ */
 const globalNotification = useNotification()
 
-// Export the global instance as default
+/**
+ * @default
+ * @description Default export of the global notification instance.
+ * Use this for app-wide notification management.
+ */
 export default globalNotification
 
-// Also export showNotification from global instance for convenience
+/**
+ * @function showNotification
+ * @description Convenience export of the global notification's showNotification method.
+ * Allows direct usage without importing the full instance.
+ *
+ * @example
+ * ```typescript
+ * import { showNotification } from '@/composables/useNotification'
+ * showNotification({ type: 'success', message: 'Done!' })
+ * ```
+ */
 export const showNotification = globalNotification.showNotification

@@ -1,7 +1,27 @@
 /**
- * Get the YouTube embed URL for a given video URL.
- * @param url - YouTube video URL, ex: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/IilTAW3ugN0?si=Bomx_NsD-xEzH6YB
- * @returns YouTube embed URL
+ * @module utils/url-content
+ * @description Utilities for processing and validating URL content, particularly YouTube URLs.
+ * Provides functions to convert YouTube watch URLs to embed URLs with optimized parameters.
+ */
+
+/**
+ * @function getYouTubeEmbedUrl
+ * @description Converts a YouTube watch URL to an embed URL with optimized autoplay parameters.
+ * Handles both standard youtube.com/watch URLs and shortened youtu.be URLs.
+ *
+ * @param {string} url - YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID)
+ * @returns {string} YouTube embed URL with autoplay parameters, or original URL if invalid
+ *
+ * @example
+ * ```typescript
+ * const embedUrl = getYouTubeEmbedUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+ * // Returns: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&...'
+ * ```
+ *
+ * @remarks
+ * - Returns original URL if not a valid YouTube URL
+ * - Includes autoplay, mute, loop, and other mobile-friendly parameters
+ * - Extracts video ID from both URL formats
  */
 export function getYouTubeEmbedUrl(url: string): string {
   // Check if the URL is a valid YouTube URL
@@ -26,9 +46,24 @@ export function getYouTubeEmbedUrl(url: string): string {
 }
 
 /**
- * Check if a URL is a valid YouTube video URL.
- * @param url - YouTube video URL, ex: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/IilTAW3ugN0?si=Bomx_NsD-xEzH6YB
- * @returns True if the URL is valid, false otherwise.
+ * @function isValidYouTubeUrl
+ * @description Validates if a URL is a valid YouTube video URL.
+ * Checks for both standard youtube.com/watch and shortened youtu.be formats.
+ *
+ * @param {string} url - YouTube video URL to validate
+ * @returns {boolean} True if the URL is a valid YouTube video URL, false otherwise
+ *
+ * @example
+ * ```typescript
+ * if (isValidYouTubeUrl(url)) {
+ *   const embedUrl = getYouTubeEmbedUrl(url)
+ * }
+ * ```
+ *
+ * @remarks
+ * - Validates URL format using regex
+ * - Supports both youtube.com and youtu.be domains
+ * - Requires 11-character video ID
  */
 export function isValidYouTubeUrl(url: string): boolean {
   const youTubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}(?:[?&].*)?$/

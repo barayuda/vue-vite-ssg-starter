@@ -23,28 +23,59 @@ Requirements: Node 22+, pnpm 10+.
 - `src/styles/main.css` — Tailwind v4 entry, tokens, and small UI primitives.
 - `scripts/post-build.mjs` — Moves built HTML into subfolders for SSG-friendly hosting.
 
-## Environment
+## Environment Setup
 
-Duplicate `.env.development` for new environments. Variables used:
+### Quick Setup
 
-- `VITE_APP_BASE_URL` — Base URL for sitemap generation and previews.
-- `VITE_APP_ENV` / `VITE_APP_PROXY_URL` — Reserved for future proxying.
-- `VITE_RECAPTCHA_SITE_KEY` — Required to render the Recaptcha demo (`src/pages/plugins.vue`).
+1. **Copy environment templates:**
+   ```bash
+   cp .env.development.example .env.development
+   cp .env.production.example .env.production
+   ```
 
-### Dynamic Routes API Configuration
+2. **Customize** `.env.development` for your local setup
 
-To use a real API instead of the mock API for generating dynamic routes, configure these variables:
+3. **Never commit** `.env.development` or `.env.production` to version control
 
-- `VITE_GUIDES_API_ENDPOINT` — API endpoint to fetch guides (e.g., `https://api.example.com/guides`)
+### Environment Variables
+
+#### Application Configuration
+- `VITE_APP_BASE_URL` — Base URL for sitemap generation and previews
+- `VITE_APP_ENV` — Environment identifier (`development`, `production`)
+- `VITE_APP_PROXY_URL` — Legacy proxy URL (reserved)
+
+#### API Proxy Configuration (Development)
+- `VITE_API_TARGET` — API proxy target (e.g., `http://localhost:3000`)
+- `VITE_API_WS_TARGET` — WebSocket proxy target (optional)
+- `VITE_API_ENABLE_LOGGING` — Enable request/response logging
+- `VITE_API_ENABLE_CORS` — Enable CORS headers
+
+#### Rate Limiting Configuration
+- `VITE_API_RATE_LIMIT_ENABLED` — Enable rate limiting (default: `true`)
+- `VITE_API_RATE_LIMIT_MAX` — Max requests per window (default: `100`)
+- `VITE_API_RATE_LIMIT_WINDOW` — Time window in ms (default: `60000`)
+
+#### Dynamic Routes API Configuration
+- `VITE_GUIDES_API_ENDPOINT` — API endpoint to fetch guides
 - `VITE_GUIDES_API_METHOD` — HTTP method (default: `GET`)
-- `VITE_GUIDES_API_HEADERS` — JSON string of headers (e.g., `{"Authorization": "Bearer TOKEN"}`)
-- `VITE_GUIDES_API_RESPONSE_PATH` — Path to guides array in response (e.g., `data.guides`)
+- `VITE_GUIDES_API_HEADERS` — JSON string of headers
+- `VITE_GUIDES_API_RESPONSE_PATH` — Path to guides array in response
 - `VITE_GUIDES_API_SLUG_FIELD` — Field name containing slug (default: `slug`)
 - `VITE_GUIDES_API_TIMEOUT` — Request timeout in ms (default: `10000`)
 
-See [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md) for detailed configuration examples.
+#### Third-Party Services
+- `VITE_RECAPTCHA_SITE_KEY` — ReCAPTCHA public site key
 
-All client-side variables must be prefixed with `VITE_`.
+### Security Notes
+
+⚠️ **Important**: Variables prefixed with `VITE_` are **exposed to client code**. Never use `VITE_` prefix for:
+- Passwords
+- API secret keys
+- Database credentials
+- Private tokens
+- Any sensitive data
+
+See [docs/ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) for complete setup guide and [docs/ENVIRONMENT_VARIABLE_SECURITY.md](docs/ENVIRONMENT_VARIABLE_SECURITY.md) for security best practices.
 
 ## Features to reuse
 

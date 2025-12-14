@@ -1,14 +1,46 @@
 <script setup lang="ts">
+/**
+ * @component Notifications
+ * @description Notification display component that renders notifications from the global notification system.
+ * Supports multiple notification types (success, error, warning, info) with icons, auto-dismiss,
+ * and keyboard accessibility. Uses Vue transitions for smooth animations.
+ *
+ * @example
+ * ```vue
+ * <Notifications />
+ * ```
+ *
+ * @remarks
+ * - Fixed positioning in top-right corner
+ * - TransitionGroup for smooth enter/leave animations
+ * - Keyboard accessible (Enter/Space to dismiss)
+ * - ARIA live regions for screen readers
+ * - Filters out invalid/empty notifications
+ * - Type-based styling and icons
+ */
 import { computed, ref, watch } from 'vue'
 import globalNotification, { NotificationType } from '/@/composables/useNotification'
 
+/**
+ * @interface INotification
+ * @description Notification object structure.
+ */
 interface INotification {
+  /** Unique notification ID */
   id: number
+  /** Notification message text */
   message: string
+  /** Notification type (success, error, warning, info) */
   type: typeof NotificationType
+  /** Whether notification can be manually dismissed */
   dismissible?: boolean
 }
 
+/**
+ * @computed notifications
+ * @description Filtered list of valid notifications from the global notification system.
+ * Removes notifications with empty or invalid messages.
+ */
 const notifications = computed((): INotification[] => {
   // Filter out any notifications with empty or invalid messages
   return globalNotification.notifications.value.filter((notification: INotification) =>
@@ -17,6 +49,11 @@ const notifications = computed((): INotification[] => {
     && notification.message.trim() !== '',
   )
 })
+
+/**
+ * @constant debugMode
+ * @description Debug mode flag for logging notifications (currently unused).
+ */
 const debugMode = ref(false)
 
 // Log notifications for debugging
@@ -26,7 +63,12 @@ watch(notifications, (newNotifications) => {
   }
 })
 
-// Get SVG icon based on notification type
+/**
+ * @function getIcon
+ * @description Returns SVG icon markup based on notification type.
+ * @param {NotificationTypeValue} type - Notification type
+ * @returns {string} SVG markup string for the icon
+ */
 function getIcon(type: any) {
   switch (type) {
     case NotificationType.SUCCESS:
@@ -41,7 +83,12 @@ function getIcon(type: any) {
   }
 }
 
-// Get CSS class based on notification type
+/**
+ * @function getTypeClass
+ * @description Returns Tailwind CSS classes based on notification type for styling.
+ * @param {NotificationTypeValue} type - Notification type
+ * @returns {string} CSS class string for the notification type
+ */
 function getTypeClass(type: any) {
   switch (type) {
     case NotificationType.SUCCESS:
@@ -56,12 +103,21 @@ function getTypeClass(type: any) {
   }
 }
 
-// Handle dismiss notification
+/**
+ * @function handleDismiss
+ * @description Dismisses a notification by its ID.
+ * @param {number} id - Notification ID to dismiss
+ */
 function handleDismiss(id: number) {
   globalNotification.dismiss(id)
 }
 
-// Keyboard accessibility for dismissing notifications
+/**
+ * @function handleKeyDown
+ * @description Handles keyboard events for dismissing notifications (Enter or Space).
+ * @param {KeyboardEvent} event - Keyboard event object
+ * @param {number} id - Notification ID to dismiss
+ */
 function handleKeyDown(event: { key: string, preventDefault: () => void }, id: any) {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()

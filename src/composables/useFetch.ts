@@ -1,3 +1,9 @@
+/**
+ * @module composables/useFetch
+ * @description Enhanced fetch composable with automatic reactivity, error handling, and XSS protection.
+ * Provides a reactive wrapper around the Fetch API with built-in sanitization, loading states, and error management.
+ */
+
 import type { ComputedRef, Ref } from 'vue'
 import type { FetchError } from '../types/errors'
 import { computed, onScopeDispose, ref, toValue, watchEffect } from 'vue'
@@ -5,20 +11,22 @@ import { createApiError, createNetworkError, createUnknownError } from '../types
 import { sanitizeObject, sanitizeUrlParams } from '../utils/sanitize.module.js'
 
 /**
- * Interface for the return object of useFetch composable
+ * @interface IUseFetchReturn
+ * @template T - The type of the response data
+ * @description Return type for the `useFetch` composable, containing reactive state and computed properties.
  */
 export interface IUseFetchReturn<T = unknown> {
-  /** The response data */
+  /** The response data, null until request completes */
   data: Ref<T | null>
-  /** Error information if request fails */
+  /** Error information if request fails, null on success */
   error: Ref<FetchError | null>
-  /** HTTP status code */
+  /** HTTP status code from the response */
   statusCode: Ref<number>
-  /** HTTP status text */
+  /** HTTP status text from the response */
   statusText: Ref<string>
-  /** Loading state indicator */
+  /** Loading state indicator, true while request is in progress */
   isLoading: Ref<boolean>
-  /** Finished state indicator */
+  /** Finished state indicator, true when request completes (success or error) */
   isFinished: Ref<boolean>
   /** Computed property indicating if there's an error */
   isError: ComputedRef<boolean>
@@ -26,19 +34,65 @@ export interface IUseFetchReturn<T = unknown> {
   isSuccess: ComputedRef<boolean>
 }
 
+/**
+ * @interface FetchOptions
+ * @description Configuration options for fetch requests.
+ */
 interface FetchOptions {
+  /** HTTP method (GET, POST, PUT, DELETE, etc.) */
   method?: string
+  /** Custom headers to include in the request */
   headers?: Record<string, string>
+  /** Request body (will be JSON stringified and sanitized) */
   body?: unknown
+  /** Query parameters to append to the URL */
   query?: Record<string, unknown>
+  /** Path parameters to replace in the URL (e.g., :id -> value) */
   params?: Record<string, string>
 }
 
 /**
- * Enhanced fetch composable with improved error handling
- * @param url - The URL to fetch from
- * @param options - Fetch options
- * @returns Fetch state and data
+ * @function useFetch
+ * @template T - The expected type of the response data
+ * @description Enhanced fetch composable with automatic reactivity, error handling, and XSS protection.
+ * Automatically refetches when URL or options change, sanitizes all inputs, and provides comprehensive error handling.
+ *
+ * @param {string | Ref<string>} url - The URL to fetch from (can be reactive)
+ * @param {FetchOptions} [options] - Fetch configuration options
+ * @returns {IUseFetchReturn<T>} Reactive state object with data, error, and loading indicators
+ *
+ * @example
+ * ```typescript
+ * // Basic usage
+ * const { data, isLoading, error } = useFetch<User>('/api/user/123')
+ *
+ * // With query parameters
+ * const { data } = useFetch('/api/search', {
+ *   query: { q: 'vue', limit: 10 }
+ * })
+ *
+ * // With path parameters
+ * const { data } = useFetch('/api/users/:id', {
+ *   params: { id: '123' }
+ * })
+ *
+ * // POST request with body
+ * const { data, isSuccess } = useFetch('/api/users', {
+ *   method: 'POST',
+ *   body: { name: 'John', email: 'john@example.com' }
+ * })
+ * ```
+ *
+ * @throws {NetworkError} When network request fails (offline, CORS, etc.)
+ * @throws {ApiError} When server returns error status (4xx, 5xx)
+ * @throws {UnknownError} For other unexpected errors
+ *
+ * @remarks
+ * - Automatically watches URL and options for changes and refetches
+ * - All inputs (body, query params, URL params) are sanitized to prevent XSS
+ * - Cleans up watchers when component unmounts
+ * - Handles both absolute and relative URLs
+ * - Skips JSON parsing for 204 No Content responses
  */
 export function useFetch<T = unknown>(url: string | Ref<string>, options: FetchOptions = {}): IUseFetchReturn<T> {
   const data = ref<T | null>(null)
